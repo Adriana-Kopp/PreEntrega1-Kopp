@@ -18,13 +18,13 @@ const comprarProductos = () => {
     console.log(cantidadValidada);
 
     switch (producto) {
-      case "Hierbas naturales":
+      case "hierbas naturales":
         precio = 250;
         break;
-      case "Hierbas secas":
+      case "hierbas secas":
         precio = 300;
         break;
-      case "Hierbas en polvo":
+      case "hierbas en polvo":
         precio = 550;
         break;
       default:
