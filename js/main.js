@@ -1,91 +1,130 @@
-const comprarProductos = () => {
-  let producto = "";
-  let precio = 0;
-  let cantidad = 0;
-  let continuarComprando = false;
-  let totalCompra = 0;
+const carrito = [];
+
+// Ordenar productos de menor a mayor
+const ordenarMenorMayor = () => {
+  productos.sort((a, b) => a.precio - b.precio);
+  mostrarListaOrdenada();
+};
+
+// Ordenar productos de mayor a menor
+const ordenarMayorMenor = () => {
+  productos.sort((a, b) => b.precio - a.precio);
+  mostrarListaOrdenada();
+};
+
+const mostrarListaOrdenada = () => {
+  const listaDeProductos = productos.map((producto) => {
+    return "- " + producto.nombre + " $" + producto.precio;
+  });
+  alert("Lista de precios:" + "\n\n" + listaDeProductos.join("\n"));
+  comprarProductos(listaDeProductos);
+};
+
+const comprarProductos = (listaDeProductos) => {
+  let productoNombre = "";
+  let productoCantidad = 0;
+  let otroProducto = false;
 
   do {
-    producto = prompt(
-      "¿Te gustaría comprar hierbas medicinales naturales, secas o en polvo?",
-      "Ejemplo: hierbas naturales"
+    productoNombre = prompt(
+      "¿Qué producto desea comprar?" + "\n\n" + listaDeProductos.join("\n")
     );
-    cantidad = parseInt(
-      prompt("¿Cuántos paquetes de 200 gramos querés comprar?")
+    productoCantidad = parseInt(prompt("¿Cuántos queres comprar?"));
+
+    const producto = productos.find(
+      (producto) =>
+        producto.nombre.toLowerCase() === productoNombre.toLowerCase()
     );
 
-    const cantidadValidada = validarCantidad(cantidad);
-    console.log(cantidadValidada);
-
-    switch (producto) {
-      case "hierbas naturales":
-        precio = 250;
-        break;
-      case "hierbas secas":
-        precio = 300;
-        break;
-      case "hierbas en polvo":
-        precio = 550;
-        break;
-      default:
-        alert("Alguno de los datos ingresados no es correcto");
-        precio = 0;
-        cantidad = 0;
-    }
-    totalCompra += precio * cantidadValidada;
-
-    continuarComprando = confirm("¿Querés agregar otro producto?");
-  } while (continuarComprando);
-
-  const totalConDescuento = calcularDescuento(totalCompra);
-  calcularEnvio(totalConDescuento);
-};
-
-const validarCantidad = (cantidad) => {
-  while (Number.isNaN(cantidad) || cantidad === 0) {
-    if (cantidad !== 0) {
-      alert("Debe agregar un número.");
+    if (producto) {
+      agregarAlCarrito(producto, producto.id, productoCantidad);
     } else {
-      alert("Debe agregar un número distinto de cero.");
+      alert("El producto no se encuentra en el catálogo!");
     }
-    cantidad = parseInt(
-      prompt("¿Cuántos paquetes de 200 gramos querés comprar?")
-    );
-  }
-  return cantidad;
+
+    otroProducto = confirm("Desea agregar otro producto?");
+  } while (otroProducto);
+
+  confirmarCompra();
 };
 
-const calcularDescuento = (totalCompra) => {
-  let totalConDescuento = 0;
-
-  if (totalCompra >= 3500) {
-    totalConDescuento = totalCompra * 0.85;
-    return totalConDescuento;
+const agregarAlCarrito = (producto, productoId, productoCantidad) => {
+  const productoRepetido = carrito.find(
+    (producto) => producto.id === productoId
+  );
+  if (!productoRepetido) {
+    producto.cantidad += productoCantidad;
+    carrito.push(producto);
   } else {
-    return totalCompra;
+    productoRepetido.cantidad += productoCantidad;
   }
 };
 
-const calcularEnvio = (totalConDescuento) => {
-  let tieneEnvioADomicilio = confirm("¿Querés envío a domicilio?");
+const eliminarProductoCarrito = (nombreProductoAEliminar) => {
+  carrito.forEach((producto, index) => {
+    if (
+      producto.nombre.toLowerCase() === nombreProductoAEliminar.toLowerCase()
+    ) {
+      if (producto.cantidad > 1) {
+        producto.cantidad--;
+      } else {
+        carrito.splice(index, 1);
+      }
+    }
+  });
+  confirmarCompra();
+};
 
-  if (tieneEnvioADomicilio && totalConDescuento >= 2000) {
-    alert(
-      "Tenes envío a domicilio gratis porque la compra supera los $2000. El total de la compra es $" +
-        totalConDescuento
-    );
-  } else if (
-    tieneEnvioADomicilio &&
-    totalConDescuento < 2000 &&
-    totalConDescuento !== 0
-  ) {
-    totalConDescuento += 500;
-    alert(
-      "El envío cuesta $800. El total de la compra es $" + totalConDescuento
-    );
+const confirmarCompra = () => {
+  const listaProductos = carrito.map((producto) => {
+    return "- " + producto.nombre + " | Cantidad: " + producto.cantidad;
+  });
+
+  const isCheckout = confirm(
+    "Checkout: " +
+      "\n\n" +
+      listaProductos.join("\n") +
+      '\n\nPara continuar presione "Aceptar" sino "Cancelar" para eliminar un producto del carrito'
+  );
+
+  if (isCheckout) {
+    finalizarCompra(listaProductos);
   } else {
-    alert("El total de la compra es $" + totalConDescuento);
+    const nombreProductoAEliminar = prompt(
+      "Ingrese el nombre del producto a eliminar:"
+    );
+    eliminarProductoCarrito(nombreProductoAEliminar);
   }
 };
 
-comprarProductos();
+const finalizarCompra = (listaProductos) => {
+  const cantidadTotal = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+  const precioTotal = carrito.reduce(
+    (acc, item) => acc + item.cantidad * item.precio,
+    0
+  );
+  alert(
+    "Detalle de su compra: " +
+      "\n\n" +
+      listaProductos.join("\n") +
+      "\n\nTotal de productos: " +
+      cantidadTotal +
+      "\n\nEl total de su compra es: " +
+      precioTotal +
+      "\n\nGracias por su compra!"
+  );
+};
+
+const comprar = () => {
+  const productosBaratos = confirm(
+    "¿Querés ordenar la lista de productos del mas barato al mas caro?"
+  );
+
+  if (productosBaratos) {
+    ordenarMenorMayor();
+  } else {
+    ordenarMayorMenor();
+  }
+};
+
+comprar();
